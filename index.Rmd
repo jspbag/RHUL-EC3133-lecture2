@@ -1,0 +1,471 @@
+---
+pagetitle: EC3133 Estimating causal effects by OLS
+output: 
+  revealjs::revealjs_presentation:
+    incremental: false
+    theme: solarized
+    self_contained: false
+    # reveal_plugins: ["menu","notes","chalkboard"]
+    reveal_plugins: ["menu"]
+    highlight: pygments
+    center: true
+    transition: none
+    background_transition: none 
+    reveal_options:
+      # chalkboard:
+      #   theme: whiteboard
+      #   toggleNotesButton: true
+      #   toggleChalkboardButton: true
+      menu:
+        numbers: true
+      slideNumber: true
+      previewLinks: false
+    fig_caption: true
+    pandoc_args:
+    - --indented-code-classes
+    - lineNumbers
+    css: mystyle.css
+    
+--- 
+
+<section>
+
+<h1>Estimating causal effects by OLS</h1>
+
+Based on Stock and Watson, ch. 6
+
+<br>
+
+<h2>[Jesper Bagger](mailto:jesper.bagger@rhul.ac.uk)</h2>
+
+<h3>EC3133 | Royal Holloway | 2020/21</h3>
+
+</section>
+
+
+```{r results='asis', echo=FALSE, include=FALSE}
+library(AER) # Load Applied Econometrics with R library
+library(parameters) # Load parameters library 
+data(CASchools) # Load CASchools data
+# Generate a couple of useful variables
+CASchools$STR <- CASchools$students/CASchools$teachers  # Student-teacher ratio
+CASchools$Score <- (CASchools$read + CASchools$math)/2  # Student test score
+```
+
+
+# The multiple regression model
+
+## The population regression function with two regressors
+
+- The **population regression function** is the relationship between $Y$ and $X_1$ and $X_2$, on average, in the population:
+
+  <div class="box">
+  $$\mathrm{E}(Y|X_{1},X_{2}) = \beta_0 + \beta_1 X_{1} + \beta_2 X_{2}$$
+  </div>
+
+- $\beta_1$ is the difference in predicted $Y$ b/w observations with unit difference in $X_1$, **holding $X_2$ constant**
+
+## The population regression model with two regressors
+
+- Let $(Y_i,X_{1i},X_{2i}; i=1,...,n)$ be a size-$n$ random sample of $Y$, $X_1$ and $X_2$; the **error term** is
+
+  <div class="box">
+  $$u_i = Y_i - \mathrm{E}(Y_i|X_{1i},X_{2i}); \quad i=1,...,n$$
+  </div>
+
+- The **population multiple regression model** is
+
+  <div class="box">
+  $$Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + u_i; \quad i=1,...,n$$
+  </div>
+
+## The OLS estimator in multiple regression
+
+- OLS finds regression coefficients $\hat{\beta}_0,\hat{\beta}_1,\hat{\beta}_2$ that puts the fitted regression plane as **close to** the data as possible
+
+  <div class="box">
+  $$\min_{\hat{\beta}_0,\hat{\beta}_1,\hat{\beta}_2} \sum_{i=1}^n \big(\underset{ \text{residual, } \hat{u}_i }{\underbrace{Y_i - \hat{\beta}_0 - \hat{\beta}_1 X_{1i} - \hat{\beta}_2 X_{2i} }} \big)^2$$
+  </div>
+
+- The distance between the regression plane is measured by the **sum of squared residuals**
+
+# Regression analysis in R
+
+## Getting started
+
+```{r, echo=TRUE, eval=FALSE, error=FALSE, warning=FALSE}
+library(AER) # Load Applied Econometrics with R library
+library(parameters) # Load parameters library 
+data(CASchools) # Load CASchools data
+# Generate a couple of useful variables
+CASchools$STR <- CASchools$students/CASchools$teachers  # Student-teacher ratio
+CASchools$Score <- (CASchools$read + CASchools$math)/2  # Student test score
+```
+
+## Test scores and  and student-teacher ratio
+
+```{r, echo=FALSE, eval=TRUE, error=FALSE, warning=FALSE}
+# par() sets or query graphical parameters
+par(mfrow=c(1,2)) # Set matrix with 1 row and 2 columns, then fill row-wise
+# Plot 1 (row 1, col 1): scatter plot of Score against STR
+plot(CASchools$STR,CASchools$Score,
+     xlab = "Student-teacher ratio", # Label x-axis
+     ylab = "Test score", # Label y-axis
+     col = "blue", # Make the data points blue
+     xlim = c(10, 30), # Range of x-values in plot
+     ylim = c(600, 720)) # Range of y-values in plot
+# Plot 2 (row 1, col 2): Scatter plot of English against Score
+plot(CASchools$english,CASchools$Score,
+     xlab = "Learning English", # Label x-axis
+     ylab = "Test score", # Label y-axis
+     col = "blue", # Make the data points blue
+     xlim = c(0, 100), # Range of x-values in plot
+     ylim = c(600, 720)) # Range of y-values in plot
+```
+
+## Test scores and  and student-teacher ratio
+
+```{r, echo=TRUE, eval=FALSE, error=FALSE, warning=FALSE}
+# par() sets or query graphical parameters
+par(mfrow=c(1,2)) # Set matrix with 1 row and 2 columns, then fill row-wise
+# Plot 1 (row 1, col 1): scatter plot of Score against STR
+plot(CASchools$STR,CASchools$Score,
+     xlab = "Student-teacher ratio", # Label x-axis
+     ylab = "Test score", # Label y-axis
+     col = "blue", # Make the data points blue
+     xlim = c(10, 30), # Range of x-values in plot
+     ylim = c(600, 720)) # Range of y-values in plot
+# Plot 2 (row 1, col 2): Scatter plot of English against Score
+plot(CASchools$english,CASchools$Score,
+     xlab = "Learning English", # Label x-axis
+     ylab = "Test score", # Label y-axis
+     col = "blue", # Make the data points blue
+     xlim = c(0, 100), # Range of x-values in plot
+     ylim = c(600, 720)) # Range of y-values in plot
+```
+
+## Regression in R
+
+$$Score_i = \beta_0 + \beta_1 STR_i + \beta_2 Engl_i + u_i$$
+
+```{r echo=TRUE, eval=FALSE, error=FALSE, warning=FALSE}
+# Use lm() to estimate Score = b0 + b1*STR + b2*english + u by OLS; 
+# and assign output to lm1
+lm1 <- lm(Score ~ STR + english, data = CASchools)
+# Summarize multlm to print regression output to console
+summary(lm1) 
+```
+
+## Regression in R
+
+$$Score_i = \beta_0 + \beta_1 STR_i + \beta_2 Engl_i + u_i$$
+
+```{r echo=FALSE, eval=TRUE, error=FALSE, warning=FALSE}
+# Use lm() to estimate Score = b0 + b1*STR + b2*english + u by OLS; 
+# and assign output to multlm
+lm1 <- lm(Score ~ STR + english, data = CASchools)
+# Summarize multlm to print regression output to console
+summary(lm1) 
+```
+
+## Verify OLS first order conditions in R
+
+```{r, echo=TRUE, eval=TRUE, error=FALSE, warning=FALSE}
+# Check sum of residuals is zero
+sum(lm1$residuals) # Print sum to console
+# Check sum of residuals x STR is zero
+c(sum(lm1$residuals * CASchools$STR),sum(lm1$residuals * CASchools$english)) # Print sums, put in vector using c(), to console
+```
+
+## Scatter of residuals against regressors
+
+```{r, echo=FALSE, eval=TRUE, error=FALSE, warning=FALSE}
+# par() sets or query graphical parameters
+par(mfrow=c(1,2)) # Set matrix with 1 row and 2 columns, then fill row-wise
+# Plot 1 (row 1, col 1): scatter plot of residuals against STR
+plot(CASchools$STR,lm1$residuals,
+     xlab = "Student-teacher ratio", # Label x-axis
+     ylab = "Residuals", # Label y-axis
+     col = "blue", # Make the data points blue
+     xlim = c(10, 30)) # Range of x-values in plot
+# Plot 2 (row 1, col 2): scatter plot of residuals against english
+plot(CASchools$english,lm1$residuals,
+     xlab = "Learning English", # Label x-axis
+     ylab = "Residuals", # Label y-axis
+     col = "blue", # Make the data points blue
+     xlim = c(0, 100)) # Range of x-values in plot
+```
+
+## Scatter of residuals against regressors in R
+
+```{r, echo=TRUE, eval=FALSE, error=FALSE, warning=FALSE}
+# par() sets or query graphical parameters
+par(mfrow=c(1,2)) # Set matrix with 1 row and 2 columns, then fill row-wise
+# Plot 1 (row 1, col 1): scatter plot of residuals against STR
+plot(CASchools$STR,lm1$residuals,
+     xlab = "Student-teacher ratio", # Label x-axis
+     ylab = "Residuals", # Label y-axis
+     col = "blue", # Make the data points blue
+     xlim = c(10, 30)) # Range of x-values in plot
+# Plot 2 (row 1, col 2): scatter plot of residuals against english
+plot(CASchools$english,lm1$residuals,
+     xlab = "Learning English", # Label x-axis
+     ylab = "Residuals", # Label y-axis
+     col = "blue", # Make the data points blue
+     xlim = c(0, 100)) # Range of x-values in plot
+     xlim = c(0, 100)) # Range of x-values in plot
+```
+
+## Robust standard errors in R
+
+```{r, echo=TRUE, eval=TRUE, error=FALSE, warning=FALSE}
+# Compute robust standard errors and print output to console
+parameters(lm1, robust = TRUE, vcov_type = "HC1")
+```
+
+# Omitted variable bias
+
+## An omitted variable
+
+```{r echo=FALSE, error=FALSE, warning=FALSE}
+# Estimate simple linear regressions by OLS
+lm2 <- lm(Score ~ STR, data = CASchools) # Assign regression output to lm2 
+lm3 <- lm(Score ~ english, data = CASchools) # Assign regression output to lm3 
+lm4 <- lm(english ~ STR, data = CASchools) # Assign regression output to lm4
+# par() sets or query graphical parameters
+# Set matrix with 1 row and 3 columns, then fill row-wise
+# mar sets plot margins
+par(mfrow=c(1,3), mar = c(4.1,4.1,0.1,0.5)) 
+plot(CASchools$STR,CASchools$Score,
+     xlab = "Student-teacher ratio",
+     ylab = "Test score",
+     col = "blue",
+     xlim = c(10, 30),
+     ylim = c(600, 720))
+abline(lm2,
+       lwd = 3,
+       col = "red")
+plot(CASchools$english,CASchools$Score,
+     xlab = "Learning English",
+     ylab = "Test score",
+     col = "blue",
+     xlim = c(0, 100),
+     ylim = c(600, 720))
+abline(lm3,
+       lwd = 3,
+       col = "red")
+plot(CASchools$STR,CASchools$english,
+     xlab = "Student-teacher ratio",
+     ylab = "Learning English",
+     col = "blue",
+     xlim = c(10, 30),
+     ylim = c(0, 100))
+abline(lm4,
+       lwd = 3,
+       col = "red")
+```
+
+
+## Omitted variable bias in simple regression
+
+<div class="box">
+$$Y_i = \beta_0 + \beta_1 X_i + u_i; \quad i = 1,\ldots,n$$
+
+**Omitted variable bias** is the bias in the OLS estimator of the causal effect of $X$ on $Y$ that arises when the regressor $X$ is **correlated** with an **omitted variable**
+
+Omitted variable bias arises when two conditions are met:
+
+1. $X$ is **correlated** with the omitted variable
+
+2. The omitted variable is a **determinant** of $Y$
+</div>
+
+## Omitted variables and the OLS estimator of causal effects
+
+- If the omitted variable, which is contained in the error term $u$, correlates with the included $X$,
+
+  $$\mathrm{E}(u|X) \neq 0$$
+
+- Omitted variables **violate** the least squares assumptions for causal inference: OLS estimator **biased**, **inconsistent**
+
+  <div class="box">
+  $$\hat{\beta}_1 \overset{p}{\rightarrow} \beta_1 + \rho_{Xu}\frac{\sigma_u}{\sigma_X}$$
+  </div>
+
+
+## Simple regression in R with robust standard errors
+
+```{r, echo=TRUE, eval=TRUE, error=FALSE, warning=FALSE}
+# Estimate simple linear regression Score = b0 + b1*STR + u by OLS
+lm2 <- lm(Score ~ STR, data = CASchools) # Assign regression output to lm2
+# Compute robust standard errors and print output to console
+parameters(lm2, robust = TRUE, vcov_type = "HC1")
+```
+
+## Holding the omitted variable constant
+
+- The omitted variable problem arise because an excluded determinant of $Y$ **correlates** with $X$
+
+  Solution: estimate the effect of $X$ on $Y$ **holding the omitted variable constant**
+
+- Holding the omitted variable constant works because constant variables cannot correlate with other variables
+
+- **Multiple regression analysis** is a convenient way to addresses omitted variable bias when the omitted variable is **observed**, and can be included in the analysis
+
+
+# Estimating causal effects with multiple regression
+
+## Causality
+
+- **Causality** means that a specific action or attribute leads to a specific, measureable consequence
+
+- Questions about causal relationships can be framed as **ceteris paribus** ("other things equal") questions:
+
+  <div class="box">
+  How does $Y$ change if $X$ is changed, holding all other factors that may affect $Y$ constant?
+  </div>
+  
+- Suggests an experimental approach to estimating causal effects, but experimental data rarely available
+
+## Estimating causal effects by OLS
+
+<div class="box">
+$$Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + u_i; \quad i=1,\ldots,n$$
+
+where $\beta_1$ and $\beta_2$ are a causal effects. The OLS estimators $\hat{\beta}_1$ and $\hat{\beta}_2$ are consistent estimator of $\beta_1$ and $\beta_2$ if
+
+1. Zero conditional mean: $\mathrm{E}(u_i|X_{1i},X_{2i}) = 0$
+
+2. $(X_{1i},X_{2i},Y_i;i=1,\ldots,n)$ is an i.i.d. sample
+
+3. $X_{1i}$ and $X_{2i}$ and $Y_i$ have nonzero finite 4th moments
+
+4. There is no perfect multicollinearity
+
+</div>
+
+
+## The zero conditional mean assumption
+
+<div class="box">
+$$\mathrm{E}(u_i|X_{1i},X_{2i}) = 0$$
+</div>
+
+- Different $X_{\ell i}$-values not associated w/ systematic changes in mean $u_i$: $X_{\ell i}$ is **as-if randomly assigned**, for $\ell=1,2$
+
+- Zero conditional mean implies zero covariance:
+
+  $$\mathrm{E}(u_i|X_{1i},X_{2i}) = 0 \Rightarrow \mathrm{Cov}(u_i,X_{\ell i})  = 0, \quad \ell=1,2$$
+
+
+## The zero conditional mean assumption and OLS
+
+- Consistent estimation **requires** $\mathrm{E}(u_i|X_{1i},X_{2i}) = 0$, implying zero covariance between error and regressors in the population from which the sample is drawn.
+
+- The OLS estimator **imposes** $\sum_{i=1}^n \hat{u}_i X_{\ell i} = 0$ for $\ell = 1,2$, which implies zero covariance between residuals and regressors in the sample
+
+- The residuals are the sample counterpart to the population errors. If errors and regressors are correlated in the population, we should use an estimator that allows for residuals and regressors to be correlated in the sample 
+
+## Control variables
+
+- Interested in the causal effect of a subset of regressors: distinguish b/w variables of interest and **control variables**
+
+- A control variable is **included only to avoid omitted variable bias** to the estimated causal effect of interest
+
+  We don't care if the estimated coefficients on the control variables are biased estimates of their causal effects
+
+## Estimating causal effects with control variables
+
+<div class="box">
+$$Y_i = \beta_0 + \beta_1 X_{i}+ \beta_{2} W_{i} + u_i; \quad i=1,\ldots,n$$
+
+where $\beta_1$ is a causal effect, $W$ is a control variable. The OLS estimator $\hat{\beta}_1$ is a consistent estimator of $\beta_1$ if
+
+1. Conditional mean independence
+
+  $$\mathrm{E}(u_i|X_{i},W_{i}) = \mathrm{E}(u_i|W_{i})$$
+
+2. $(X_{i},W_{i},Y_i;i=1,\ldots,n)$ is an i.i.d. sample
+
+3. $X_i$, $W_i$ and $Y_i$ have nonzero finite 4th moments 
+
+4. There is no perfect multicollinearity
+
+</div>
+
+## The conditional mean independence assumption
+
+<div class="box">
+$$\mathrm{E}(u_i|X_{i},W_{i}) = \mathrm{E}(u_i|W_{i})$$
+</div>
+
+- In general, the control variable $W_i$ is correlated with $u_i$; that is, $\mathrm{E}(u_i|W_i) \neq 0$
+
+- Under conditional mean independence, $X_i$ is **as-if randomly assigned** for observations w/ same $W_i$-value.
+
+  Then, $\hat{\beta}_1$ is a consistent estimator of the causal effect on $Y$ of $X$, namely of $\beta_1$
+
+## Test scores and student-teacher ratios
+
+- Failure to account for "outside learning opportunities" is a potential omitted variable bias in estimating the causal effect of student-teacher ratios on test scores
+
+- Outside learning opportunities likely correlated with economic background; therefore, consider
+
+  \begin{multline*}
+  Score_i = \beta_0 + \beta_1 STR_i  \\
+  + \beta_2 PctEL_i + \beta_3 LchPct_i + u_i
+  \end{multline*}
+
+  where $LchPct_i$ is share of economically disadvantaged children (receiving subsidized lunch) in district $i$
+
+## Test scores and student-teacher ratios
+
+- The control variable $LchPct_i$ is correlated with "outside learning opportunities", and therefore $u_i$:
+
+  $$\mathrm{E}(u_i|STR_i,PctEL_i,LchPct_i) \neq 0$$
+
+- Conditional mean independence
+
+  \begin{multline*}
+  \mathrm{E}(u_i|STR_i,PctEL_i,LchPct_i)  \\
+  =  \mathrm{E}(u_i|PctEL_i,LchPct_i)
+  \end{multline*}
+  
+  says that $STR$ is as-if randomly assigned among districts with the same $PctEL_i$- and $LchPct_i$-values
+
+## Test scores and student-teacher ratios
+
+```{r echo=TRUE, eval=FALSE, error=FALSE, warning=FALSE}
+# Compute robust standard errors and print output to console
+parameters(lm1, robust = TRUE, vcov_type = "HC1")
+# Use lm() to estimate Score = b0 + b1*STR + b2*english + b3*lunch + u by OLS; 
+# and assign output to lm3
+lm3 <- lm(Score ~ STR + english + lunch, data = CASchools)
+# Compute robust standard errors and print output to console
+parameters(lm3, robust = TRUE, vcov_type = "HC1")
+```
+
+## Test scores and student-teacher ratios
+
+```{r echo=FALSE, eval=TRUE, error=FALSE, warning=FALSE}
+# Compute robust standard errors and print output to console
+parameters(lm1, robust = TRUE, vcov_type = "HC1")
+# Use lm() to estimate Score = b0 + b1*STR + b2*english + b3*lunch + u by OLS; 
+# and assign output to lm3
+lm3 <- lm(Score ~ STR + english + lunch, data = CASchools)
+# Compute robust standard errors and print output to console
+parameters(lm3, robust = TRUE, vcov_type = "HC1")
+```
+
+# Summary
+
+## Summary
+
+- Omitted variable bias in a regression occurs when an omitted regressor (i) correlates with an included regressor, and (ii) is a determinant of the dependent variable
+
+- Omitted variables violate the zero conditional mean assumption/conditional mean independence assumptions: pose a problem for OLS estimation of causal effects
+
+- The multiple regression is one way to deal with the omitted variable problem, but requires that the omitted variable is observed, and can be included in the analysis
+
+
+

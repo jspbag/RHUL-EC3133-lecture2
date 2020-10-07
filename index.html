@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <title>EC3133 Estimating causal effects by OLS</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="index_files/reveal.js-3.3.0.1/css/reveal.css"/>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="index_files/reveal.js-3.3.0.1/css/theme/solarized.css" id="theme">
+
+
+  <!-- some tweaks to reveal css -->
+  <style type="text/css">
+    .reveal h1 { font-size: 2.0em; }
+    .reveal h2 { font-size: 1.5em;  }
+    .reveal h3 { font-size: 1.25em;	}
+    .reveal h4 { font-size: 1em;	}
+
+    .reveal .slides>section,
+    .reveal .slides>section>section {
+      padding: 0px 0px;
+    }
+
+
+
+    .reveal table {
+      border-width: 1px;
+      border-spacing: 2px;
+      border-style: dotted;
+      border-color: gray;
+      border-collapse: collapse;
+      font-size: 0.7em;
+    }
+
+    .reveal table th {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      font-weight: bold;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+    .reveal table td {
+      border-width: 1px;
+      padding-left: 10px;
+      padding-right: 25px;
+      border-style: dotted;
+      border-color: gray;
+    }
+
+
+  </style>
+
+    <style type="text/css">code{white-space: pre;}</style>
+
+    <link rel="stylesheet" href="mystyle.css"/>
+
+<!-- Printing and PDF exports -->
+<script id="paper-css" type="application/dynamic-css">
+
+/* Default Print Stylesheet Template
+   by Rob Glazebrook of CSSnewbie.com
+   Last Updated: June 4, 2008
+
+   Feel free (nay, compelled) to edit, append, and
+   manipulate this file as you see fit. */
+
+
+@media print {
+
+	/* SECTION 1: Set default width, margin, float, and
+	   background. This prevents elements from extending
+	   beyond the edge of the printed page, and prevents
+	   unnecessary background images from printing */
+	html {
+		background: #fff;
+		width: auto;
+		height: auto;
+		overflow: visible;
+	}
+	body {
+		background: #fff;
+		font-size: 20pt;
+		width: auto;
+		height: auto;
+		border: 0;
+		margin: 0 5%;
+		padding: 0;
+		overflow: visible;
+		float: none !important;
+	}
+
+	/* SECTION 2: Remove any elements not needed in print.
+	   This would include navigation, ads, sidebars, etc. */
+	.nestedarrow,
+	.controls,
+	.fork-reveal,
+	.share-reveal,
+	.state-background,
+	.reveal .progress,
+	.reveal .backgrounds {
+		display: none !important;
+	}
+
+	/* SECTION 3: Set body font face, size, and color.
+	   Consider using a serif font for readability. */
+	body, p, td, li, div {
+		font-size: 20pt!important;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		color: #000;
+	}
+
+	/* SECTION 4: Set heading font face, sizes, and color.
+	   Differentiate your headings from your body text.
+	   Perhaps use a large sans-serif for distinction. */
+	h1,h2,h3,h4,h5,h6 {
+		color: #000!important;
+		height: auto;
+		line-height: normal;
+		font-family: Georgia, "Times New Roman", Times, serif !important;
+		text-shadow: 0 0 0 #000 !important;
+		text-align: left;
+		letter-spacing: normal;
+	}
+	/* Need to reduce the size of the fonts for printing */
+	h1 { font-size: 28pt !important;  }
+	h2 { font-size: 24pt !important; }
+	h3 { font-size: 22pt !important; }
+	h4 { font-size: 22pt !important; font-variant: small-caps; }
+	h5 { font-size: 21pt !important; }
+	h6 { font-size: 20pt !important; font-style: italic; }
+
+	/* SECTION 5: Make hyperlinks more usable.
+	   Ensure links are underlined, and consider appending
+	   the URL to the end of the link for usability. */
+	a:link,
+	a:visited {
+		color: #000 !important;
+		font-weight: bold;
+		text-decoration: underline;
+	}
+	/*
+	.reveal a:link:after,
+	.reveal a:visited:after {
+		content: " (" attr(href) ") ";
+		color: #222 !important;
+		font-size: 90%;
+	}
+	*/
+
+
+	/* SECTION 6: more reveal.js specific additions by @skypanther */
+	ul, ol, div, p {
+		visibility: visible;
+		position: static;
+		width: auto;
+		height: auto;
+		display: block;
+		overflow: visible;
+		margin: 0;
+		text-align: left !important;
+	}
+	.reveal pre,
+	.reveal table {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.reveal pre code {
+		padding: 20px;
+		border: 1px solid #ddd;
+	}
+	.reveal blockquote {
+		margin: 20px 0;
+	}
+	.reveal .slides {
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 0 !important;
+		zoom: 1 !important;
+
+		overflow: visible !important;
+		display: block !important;
+
+		text-align: left !important;
+		-webkit-perspective: none;
+		   -moz-perspective: none;
+		    -ms-perspective: none;
+		        perspective: none;
+
+		-webkit-perspective-origin: 50% 50%;
+		   -moz-perspective-origin: 50% 50%;
+		    -ms-perspective-origin: 50% 50%;
+		        perspective-origin: 50% 50%;
+	}
+	.reveal .slides section {
+		visibility: visible !important;
+		position: static !important;
+		width: auto !important;
+		height: auto !important;
+		display: block !important;
+		overflow: visible !important;
+
+		left: 0 !important;
+		top: 0 !important;
+		margin-left: 0 !important;
+		margin-top: 0 !important;
+		padding: 60px 20px !important;
+		z-index: auto !important;
+
+		opacity: 1 !important;
+
+		page-break-after: always !important;
+
+		-webkit-transform-style: flat !important;
+		   -moz-transform-style: flat !important;
+		    -ms-transform-style: flat !important;
+		        transform-style: flat !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+
+		-webkit-transition: none !important;
+		   -moz-transition: none !important;
+		    -ms-transition: none !important;
+		        transition: none !important;
+	}
+	.reveal .slides section.stack {
+		padding: 0 !important;
+	}
+	.reveal section:last-of-type {
+		page-break-after: avoid !important;
+	}
+	.reveal section .fragment {
+		opacity: 1 !important;
+		visibility: visible !important;
+
+		-webkit-transform: none !important;
+		   -moz-transform: none !important;
+		    -ms-transform: none !important;
+		        transform: none !important;
+	}
+	.reveal section img {
+		display: block;
+		margin: 15px 0px;
+		background: rgba(255,255,255,1);
+		border: 1px solid #666;
+		box-shadow: none;
+	}
+
+	.reveal section small {
+		font-size: 0.8em;
+	}
+
+}  
+</script>
+
+
+<script id="pdf-css" type="application/dynamic-css">
+    
+/**
+ * This stylesheet is used to print reveal.js
+ * presentations to PDF.
+ *
+ * https://github.com/hakimel/reveal.js#pdf-export
+ */
+
+* {
+	-webkit-print-color-adjust: exact;
+}
+
+body {
+	margin: 0 auto !important;
+	border: 0;
+	padding: 0;
+	float: none !important;
+	overflow: visible;
+}
+
+html {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* Remove any elements not needed in print. */
+.nestedarrow,
+.reveal .controls,
+.reveal .progress,
+.reveal .playback,
+.reveal.overview,
+.fork-reveal,
+.share-reveal,
+.state-background {
+	display: none !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	text-shadow: 0 0 0 #000 !important;
+}
+
+.reveal pre code {
+	overflow: hidden !important;
+	font-family: Courier, 'Courier New', monospace !important;
+}
+
+ul, ol, div, p {
+	visibility: visible;
+	position: static;
+	width: auto;
+	height: auto;
+	display: block;
+	overflow: visible;
+	margin: auto;
+}
+.reveal {
+	width: auto !important;
+	height: auto !important;
+	overflow: hidden !important;
+}
+.reveal .slides {
+	position: static;
+	width: 100%;
+	height: auto;
+
+	left: auto;
+	top: auto;
+	margin: 0 !important;
+	padding: 0 !important;
+
+	overflow: visible;
+	display: block;
+
+	-webkit-perspective: none;
+	   -moz-perspective: none;
+	    -ms-perspective: none;
+	        perspective: none;
+
+	-webkit-perspective-origin: 50% 50%; /* there isn't a none/auto value but 50-50 is the default */
+	   -moz-perspective-origin: 50% 50%;
+	    -ms-perspective-origin: 50% 50%;
+	        perspective-origin: 50% 50%;
+}
+
+.reveal .slides section {
+	page-break-after: always !important;
+
+	visibility: visible !important;
+	position: relative !important;
+	display: block !important;
+	position: relative !important;
+
+	margin: 0 !important;
+	padding: 0 !important;
+	box-sizing: border-box !important;
+	min-height: 1px;
+
+	opacity: 1 !important;
+
+	-webkit-transform-style: flat !important;
+	   -moz-transform-style: flat !important;
+	    -ms-transform-style: flat !important;
+	        transform-style: flat !important;
+
+	-webkit-transform: none !important;
+	   -moz-transform: none !important;
+	    -ms-transform: none !important;
+	        transform: none !important;
+}
+
+.reveal section.stack {
+	margin: 0 !important;
+	padding: 0 !important;
+	page-break-after: avoid !important;
+	height: auto !important;
+	min-height: auto !important;
+}
+
+.reveal img {
+	box-shadow: none;
+}
+
+.reveal .roll {
+	overflow: visible;
+	line-height: 1em;
+}
+
+/* Slide backgrounds are placed inside of their slide when exporting to PDF */
+.reveal section .slide-background {
+	display: block !important;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: -1;
+}
+
+/* All elements should be above the slide-background */
+.reveal section>* {
+	position: relative;
+	z-index: 1;
+}
+
+/* Display slide speaker notes when 'showNotes' is enabled */
+.reveal .speaker-notes-pdf {
+	display: block;
+	width: 100%;
+	max-height: none;
+	left: auto;
+	top: auto;
+	z-index: 100;
+}
+
+/* Display slide numbers when 'slideNumber' is enabled */
+.reveal .slide-number-pdf {
+	display: block;
+	position: absolute;
+	font-size: 14px;
+}
+
+</script>
+
+
+<script>
+var style = document.createElement( 'style' );
+style.type = 'text/css';
+var style_script_id = window.location.search.match( /print-pdf/gi ) ? 'pdf-css' : 'paper-css';
+var style_script = document.getElementById(style_script_id).text;
+style.innerHTML = style_script;
+document.getElementsByTagName('head')[0].appendChild(style);
+</script>
+
+    <link href="index_files/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+    <link href="index_files/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+
+<section class="slide level2">
+
+<section>
+<h1>
+Estimating causal effects by OLS
+</h1>
+<p>Based on Stock and Watson, ch. 6</p>
+<p><br></p>
+<h2>
+<a href="mailto:jesper.bagger@rhul.ac.uk">Jesper Bagger</a>
+</h2>
+<h3>
+EC3133 | Royal Holloway | 2020/21
+</h3>
+</section>
+</section>
+<section><section id="the-multiple-regression-model" class="title-slide slide level1"><h1>The multiple regression model</h1></section><section id="the-population-regression-function-with-two-regressors" class="slide level2">
+<h2>The population regression function with two regressors</h2>
+<ul>
+<li><p>The <strong>population regression function</strong> is the relationship between <span class="math inline">\(Y\)</span> and <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span>, on average, in the population:</p>
+<div class="box">
+<p><span class="math display">\[\mathrm{E}(Y|X_{1},X_{2}) = \beta_0 + \beta_1 X_{1} + \beta_2 X_{2}\]</span></p>
+</div></li>
+<li><p><span class="math inline">\(\beta_1\)</span> is the difference in predicted <span class="math inline">\(Y\)</span> b/w observations with unit difference in <span class="math inline">\(X_1\)</span>, <strong>holding <span class="math inline">\(X_2\)</span> constant</strong></p></li>
+</ul>
+</section><section id="the-population-regression-model-with-two-regressors" class="slide level2">
+<h2>The population regression model with two regressors</h2>
+<ul>
+<li><p>Let <span class="math inline">\((Y_i,X_{1i},X_{2i}; i=1,...,n)\)</span> be a size-<span class="math inline">\(n\)</span> random sample of <span class="math inline">\(Y\)</span>, <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span>; the <strong>error term</strong> is</p>
+<div class="box">
+<p><span class="math display">\[u_i = Y_i - \mathrm{E}(Y_i|X_{1i},X_{2i}); \quad i=1,...,n\]</span></p>
+</div></li>
+<li><p>The <strong>population multiple regression model</strong> is</p>
+<div class="box">
+<p><span class="math display">\[Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + u_i; \quad i=1,...,n\]</span></p>
+</div></li>
+</ul>
+</section><section id="the-ols-estimator-in-multiple-regression" class="slide level2">
+<h2>The OLS estimator in multiple regression</h2>
+<ul>
+<li><p>OLS finds regression coefficients <span class="math inline">\(\hat{\beta}_0,\hat{\beta}_1,\hat{\beta}_2\)</span> that puts the fitted regression plane as <strong>close to</strong> the data as possible</p>
+<div class="box">
+<p><span class="math display">\[\min_{\hat{\beta}_0,\hat{\beta}_1,\hat{\beta}_2} \sum_{i=1}^n \big(\underset{ \text{residual, } \hat{u}_i }{\underbrace{Y_i - \hat{\beta}_0 - \hat{\beta}_1 X_{1i} - \hat{\beta}_2 X_{2i} }} \big)^2\]</span></p>
+</div></li>
+<li><p>The distance between the regression plane is measured by the <strong>sum of squared residuals</strong></p></li>
+</ul>
+</section></section>
+<section><section id="regression-analysis-in-r" class="title-slide slide level1"><h1>Regression analysis in R</h1></section><section id="getting-started" class="slide level2">
+<h2>Getting started</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(AER) <span class="co"># Load Applied Econometrics with R library</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(parameters) <span class="co"># Load parameters library </span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">data</span>(CASchools) <span class="co"># Load CASchools data</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="co"># Generate a couple of useful variables</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a>CASchools<span class="op">$</span>STR &lt;-<span class="st"> </span>CASchools<span class="op">$</span>students<span class="op">/</span>CASchools<span class="op">$</span>teachers  <span class="co"># Student-teacher ratio</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a>CASchools<span class="op">$</span>Score &lt;-<span class="st"> </span>(CASchools<span class="op">$</span>read <span class="op">+</span><span class="st"> </span>CASchools<span class="op">$</span>math)<span class="op">/</span><span class="dv">2</span>  <span class="co"># Student test score</span></span></code></pre></div>
+</section><section id="test-scores-and-and-student-teacher-ratio" class="slide level2">
+<h2>Test scores and and student-teacher ratio</h2>
+<p><img data-src="index_files/figure-revealjs/unnamed-chunk-3-1.png" /><!-- --></p>
+</section><section id="test-scores-and-and-student-teacher-ratio-1" class="slide level2">
+<h2>Test scores and and student-teacher ratio</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># par() sets or query graphical parameters</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)) <span class="co"># Set matrix with 1 row and 2 columns, then fill row-wise</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="co"># Plot 1 (row 1, col 1): scatter plot of Score against STR</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="kw">plot</span>(CASchools<span class="op">$</span>STR,CASchools<span class="op">$</span>Score,</span>
+<span id="cb2-5"><a href="#cb2-5"></a>     <span class="dt">xlab =</span> <span class="st">&quot;Student-teacher ratio&quot;</span>, <span class="co"># Label x-axis</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Test score&quot;</span>, <span class="co"># Label y-axis</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a>     <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, <span class="co"># Make the data points blue</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>     <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">30</span>), <span class="co"># Range of x-values in plot</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>     <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">600</span>, <span class="dv">720</span>)) <span class="co"># Range of y-values in plot</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="co"># Plot 2 (row 1, col 2): Scatter plot of English against Score</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="kw">plot</span>(CASchools<span class="op">$</span>english,CASchools<span class="op">$</span>Score,</span>
+<span id="cb2-12"><a href="#cb2-12"></a>     <span class="dt">xlab =</span> <span class="st">&quot;Learning English&quot;</span>, <span class="co"># Label x-axis</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Test score&quot;</span>, <span class="co"># Label y-axis</span></span>
+<span id="cb2-14"><a href="#cb2-14"></a>     <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, <span class="co"># Make the data points blue</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>     <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>), <span class="co"># Range of x-values in plot</span></span>
+<span id="cb2-16"><a href="#cb2-16"></a>     <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">600</span>, <span class="dv">720</span>)) <span class="co"># Range of y-values in plot</span></span></code></pre></div>
+</section><section id="regression-in-r" class="slide level2">
+<h2>Regression in R</h2>
+<p><span class="math display">\[Score_i = \beta_0 + \beta_1 STR_i + \beta_2 Engl_i + u_i\]</span></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Use lm() to estimate Score = b0 + b1*STR + b2*english + u by OLS; </span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="co"># and assign output to lm1</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>lm1 &lt;-<span class="st"> </span><span class="kw">lm</span>(Score <span class="op">~</span><span class="st"> </span>STR <span class="op">+</span><span class="st"> </span>english, <span class="dt">data =</span> CASchools)</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># Summarize multlm to print regression output to console</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">summary</span>(lm1) </span></code></pre></div>
+</section><section id="regression-in-r-1" class="slide level2">
+<h2>Regression in R</h2>
+<p><span class="math display">\[Score_i = \beta_0 + \beta_1 STR_i + \beta_2 Engl_i + u_i\]</span></p>
+<pre><code>## 
+## Call:
+## lm(formula = Score ~ STR + english, data = CASchools)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -48.845 -10.240  -0.308   9.815  43.461 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 686.03224    7.41131  92.566  &lt; 2e-16 ***
+## STR          -1.10130    0.38028  -2.896  0.00398 ** 
+## english      -0.64978    0.03934 -16.516  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 14.46 on 417 degrees of freedom
+## Multiple R-squared:  0.4264, Adjusted R-squared:  0.4237 
+## F-statistic:   155 on 2 and 417 DF,  p-value: &lt; 2.2e-16</code></pre>
+</section><section id="verify-ols-first-order-conditions-in-r" class="slide level2">
+<h2>Verify OLS first order conditions in R</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># Check sum of residuals is zero</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">sum</span>(lm1<span class="op">$</span>residuals) <span class="co"># Print sum to console</span></span></code></pre></div>
+<pre><code>## [1] -9.228174e-13</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># Check sum of residuals x STR is zero</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="kw">c</span>(<span class="kw">sum</span>(lm1<span class="op">$</span>residuals <span class="op">*</span><span class="st"> </span>CASchools<span class="op">$</span>STR),<span class="kw">sum</span>(lm1<span class="op">$</span>residuals <span class="op">*</span><span class="st"> </span>CASchools<span class="op">$</span>english)) <span class="co"># Print sums, put in vector using c(), to console</span></span></code></pre></div>
+<pre><code>## [1] -2.332001e-11 -1.995737e-11</code></pre>
+</section><section id="scatter-of-residuals-against-regressors" class="slide level2">
+<h2>Scatter of residuals against regressors</h2>
+<p><img data-src="index_files/figure-revealjs/unnamed-chunk-8-1.png" /><!-- --></p>
+</section><section id="scatter-of-residuals-against-regressors-in-r" class="slide level2">
+<h2>Scatter of residuals against regressors in R</h2>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># par() sets or query graphical parameters</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="kw">par</span>(<span class="dt">mfrow=</span><span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)) <span class="co"># Set matrix with 1 row and 2 columns, then fill row-wise</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="co"># Plot 1 (row 1, col 1): scatter plot of residuals against STR</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a><span class="kw">plot</span>(CASchools<span class="op">$</span>STR,lm1<span class="op">$</span>residuals,</span>
+<span id="cb9-5"><a href="#cb9-5"></a>     <span class="dt">xlab =</span> <span class="st">&quot;Student-teacher ratio&quot;</span>, <span class="co"># Label x-axis</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Residuals&quot;</span>, <span class="co"># Label y-axis</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a>     <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, <span class="co"># Make the data points blue</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a>     <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">30</span>)) <span class="co"># Range of x-values in plot</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a><span class="co"># Plot 2 (row 1, col 2): scatter plot of residuals against english</span></span>
+<span id="cb9-10"><a href="#cb9-10"></a><span class="kw">plot</span>(CASchools<span class="op">$</span>english,lm1<span class="op">$</span>residuals,</span>
+<span id="cb9-11"><a href="#cb9-11"></a>     <span class="dt">xlab =</span> <span class="st">&quot;Learning English&quot;</span>, <span class="co"># Label x-axis</span></span>
+<span id="cb9-12"><a href="#cb9-12"></a>     <span class="dt">ylab =</span> <span class="st">&quot;Residuals&quot;</span>, <span class="co"># Label y-axis</span></span>
+<span id="cb9-13"><a href="#cb9-13"></a>     <span class="dt">col =</span> <span class="st">&quot;blue&quot;</span>, <span class="co"># Make the data points blue</span></span>
+<span id="cb9-14"><a href="#cb9-14"></a>     <span class="dt">xlim =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>)) <span class="co"># Range of x-values in plot</span></span>
+<span id="cb9-15"><a href="#cb9-15"></a>     xlim =<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>)<span class="er">)</span> <span class="co"># Range of x-values in plot</span></span></code></pre></div>
+</section><section id="robust-standard-errors-in-r" class="slide level2">
+<h2>Robust standard errors in R</h2>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="co"># Compute robust standard errors and print output to console</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="kw">parameters</span>(lm1, <span class="dt">robust =</span> <span class="ot">TRUE</span>, <span class="dt">vcov_type =</span> <span class="st">&quot;HC1&quot;</span>)</span></code></pre></div>
+<pre><code>## Parameter   | Coefficient |   SE |           95% CI |      t |  df |      p
+## ---------------------------------------------------------------------------
+## (Intercept) |      686.03 | 8.73 | [668.88, 703.19] |  78.60 | 417 | &lt; .001
+## STR         |       -1.10 | 0.43 | [ -1.95,  -0.25] |  -2.54 | 417 | 0.011 
+## english     |       -0.65 | 0.03 | [ -0.71,  -0.59] | -20.94 | 417 | &lt; .001</code></pre>
+</section></section>
+<section><section id="omitted-variable-bias" class="title-slide slide level1"><h1>Omitted variable bias</h1></section><section id="an-omitted-variable" class="slide level2">
+<h2>An omitted variable</h2>
+<p><img data-src="index_files/figure-revealjs/unnamed-chunk-11-1.png" /><!-- --></p>
+</section><section id="omitted-variable-bias-in-simple-regression" class="slide level2">
+<h2>Omitted variable bias in simple regression</h2>
+<div class="box">
+<p><span class="math display">\[Y_i = \beta_0 + \beta_1 X_i + u_i; \quad i = 1,\ldots,n\]</span></p>
+<p><strong>Omitted variable bias</strong> is the bias in the OLS estimator of the causal effect of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> that arises when the regressor <span class="math inline">\(X\)</span> is <strong>correlated</strong> with an <strong>omitted variable</strong></p>
+<p>Omitted variable bias arises when two conditions are met:</p>
+<ol type="1">
+<li><p><span class="math inline">\(X\)</span> is <strong>correlated</strong> with the omitted variable</p></li>
+<li><p>The omitted variable is a <strong>determinant</strong> of <span class="math inline">\(Y\)</span></p></li>
+</ol>
+</div>
+</section><section id="omitted-variables-and-the-ols-estimator-of-causal-effects" class="slide level2">
+<h2>Omitted variables and the OLS estimator of causal effects</h2>
+<ul>
+<li><p>If the omitted variable, which is contained in the error term <span class="math inline">\(u\)</span>, correlates with the included <span class="math inline">\(X\)</span>,</p>
+<p><span class="math display">\[\mathrm{E}(u|X) \neq 0\]</span></p></li>
+<li><p>Omitted variables <strong>violate</strong> the least squares assumptions for causal inference: OLS estimator <strong>biased</strong>, <strong>inconsistent</strong></p>
+<div class="box">
+<p><span class="math display">\[\hat{\beta}_1 \overset{p}{\rightarrow} \beta_1 + \rho_{Xu}\frac{\sigma_u}{\sigma_X}\]</span></p>
+</div></li>
+</ul>
+</section><section id="simple-regression-in-r-with-robust-standard-errors" class="slide level2">
+<h2>Simple regression in R with robust standard errors</h2>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="co"># Estimate simple linear regression Score = b0 + b1*STR + u by OLS</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>lm2 &lt;-<span class="st"> </span><span class="kw">lm</span>(Score <span class="op">~</span><span class="st"> </span>STR, <span class="dt">data =</span> CASchools) <span class="co"># Assign regression output to lm2</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="co"># Compute robust standard errors and print output to console</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a><span class="kw">parameters</span>(lm2, <span class="dt">robust =</span> <span class="ot">TRUE</span>, <span class="dt">vcov_type =</span> <span class="st">&quot;HC1&quot;</span>)</span></code></pre></div>
+<pre><code>## Parameter   | Coefficient |    SE |           95% CI |     t |  df |      p
+## ---------------------------------------------------------------------------
+## (Intercept) |      698.93 | 10.36 | [678.56, 719.31] | 67.44 | 418 | &lt; .001
+## STR         |       -2.28 |  0.52 | [ -3.30,  -1.26] | -4.39 | 418 | &lt; .001</code></pre>
+</section><section id="holding-the-omitted-variable-constant" class="slide level2">
+<h2>Holding the omitted variable constant</h2>
+<ul>
+<li><p>The omitted variable problem arise because an excluded determinant of <span class="math inline">\(Y\)</span> <strong>correlates</strong> with <span class="math inline">\(X\)</span></p>
+<p>Solution: estimate the effect of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> <strong>holding the omitted variable constant</strong></p></li>
+<li><p>Holding the omitted variable constant works because constant variables cannot correlate with other variables</p></li>
+<li><p><strong>Multiple regression analysis</strong> is a convenient way to addresses omitted variable bias when the omitted variable is <strong>observed</strong>, and can be included in the analysis</p></li>
+</ul>
+</section></section>
+<section><section id="estimating-causal-effects-with-multiple-regression" class="title-slide slide level1"><h1>Estimating causal effects with multiple regression</h1></section><section id="causality" class="slide level2">
+<h2>Causality</h2>
+<ul>
+<li><p><strong>Causality</strong> means that a specific action or attribute leads to a specific, measureable consequence</p></li>
+<li><p>Questions about causal relationships can be framed as <strong>ceteris paribus</strong> (“other things equal”) questions:</p>
+<div class="box">
+<p>How does <span class="math inline">\(Y\)</span> change if <span class="math inline">\(X\)</span> is changed, holding all other factors that may affect <span class="math inline">\(Y\)</span> constant?</p>
+</div></li>
+<li><p>Suggests an experimental approach to estimating causal effects, but experimental data rarely available</p></li>
+</ul>
+</section><section id="estimating-causal-effects-by-ols" class="slide level2">
+<h2>Estimating causal effects by OLS</h2>
+<div class="box">
+<p><span class="math display">\[Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + u_i; \quad i=1,\ldots,n\]</span></p>
+<p>where <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> are a causal effects. The OLS estimators <span class="math inline">\(\hat{\beta}_1\)</span> and <span class="math inline">\(\hat{\beta}_2\)</span> are consistent estimator of <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> if</p>
+<ol type="1">
+<li><p>Zero conditional mean: <span class="math inline">\(\mathrm{E}(u_i|X_{1i},X_{2i}) = 0\)</span></p></li>
+<li><p><span class="math inline">\((X_{1i},X_{2i},Y_i;i=1,\ldots,n)\)</span> is an i.i.d. sample</p></li>
+<li><p><span class="math inline">\(X_{1i}\)</span> and <span class="math inline">\(X_{2i}\)</span> and <span class="math inline">\(Y_i\)</span> have nonzero finite 4th moments</p></li>
+<li><p>There is no perfect multicollinearity</p></li>
+</ol>
+</div>
+</section><section id="the-zero-conditional-mean-assumption" class="slide level2">
+<h2>The zero conditional mean assumption</h2>
+<div class="box">
+<p><span class="math display">\[\mathrm{E}(u_i|X_{1i},X_{2i}) = 0\]</span></p>
+</div>
+<ul>
+<li><p>Different <span class="math inline">\(X_{\ell i}\)</span>-values not associated w/ systematic changes in mean <span class="math inline">\(u_i\)</span>: <span class="math inline">\(X_{\ell i}\)</span> is <strong>as-if randomly assigned</strong>, for <span class="math inline">\(\ell=1,2\)</span></p></li>
+<li><p>Zero conditional mean implies zero covariance:</p>
+<p><span class="math display">\[\mathrm{E}(u_i|X_{1i},X_{2i}) = 0 \Rightarrow \mathrm{Cov}(u_i,X_{\ell i})  = 0, \quad \ell=1,2\]</span></p></li>
+</ul>
+</section><section id="the-zero-conditional-mean-assumption-and-ols" class="slide level2">
+<h2>The zero conditional mean assumption and OLS</h2>
+<ul>
+<li><p>Consistent estimation <strong>requires</strong> <span class="math inline">\(\mathrm{E}(u_i|X_{1i},X_{2i}) = 0\)</span>, implying zero covariance between error and regressors in the population from which the sample is drawn.</p></li>
+<li><p>The OLS estimator <strong>imposes</strong> <span class="math inline">\(\sum_{i=1}^n \hat{u}_i X_{\ell i} = 0\)</span> for <span class="math inline">\(\ell = 1,2\)</span>, which implies zero covariance between residuals and regressors in the sample</p></li>
+<li><p>The residuals are the sample counterpart to the population errors. If errors and regressors are correlated in the population, we should use an estimator that allows for residuals and regressors to be correlated in the sample</p></li>
+</ul>
+</section><section id="control-variables" class="slide level2">
+<h2>Control variables</h2>
+<ul>
+<li><p>Interested in the causal effect of a subset of regressors: distinguish b/w variables of interest and <strong>control variables</strong></p></li>
+<li><p>A control variable is <strong>included only to avoid omitted variable bias</strong> to the estimated causal effect of interest</p>
+<p>We don’t care if the estimated coefficients on the control variables are biased estimates of their causal effects</p></li>
+</ul>
+</section><section id="estimating-causal-effects-with-control-variables" class="slide level2">
+<h2>Estimating causal effects with control variables</h2>
+<div class="box">
+<p><span class="math display">\[Y_i = \beta_0 + \beta_1 X_{i}+ \beta_{2} W_{i} + u_i; \quad i=1,\ldots,n\]</span></p>
+<p>where <span class="math inline">\(\beta_1\)</span> is a causal effect, <span class="math inline">\(W\)</span> is a control variable. The OLS estimator <span class="math inline">\(\hat{\beta}_1\)</span> is a consistent estimator of <span class="math inline">\(\beta_1\)</span> if</p>
+<ol type="1">
+<li>Conditional mean independence</li>
+</ol>
+<p><span class="math display">\[\mathrm{E}(u_i|X_{i},W_{i}) = \mathrm{E}(u_i|W_{i})\]</span></p>
+<ol start="2" type="1">
+<li><p><span class="math inline">\((X_{i},W_{i},Y_i;i=1,\ldots,n)\)</span> is an i.i.d. sample</p></li>
+<li><p><span class="math inline">\(X_i\)</span>, <span class="math inline">\(W_i\)</span> and <span class="math inline">\(Y_i\)</span> have nonzero finite 4th moments</p></li>
+<li><p>There is no perfect multicollinearity</p></li>
+</ol>
+</div>
+</section><section id="the-conditional-mean-independence-assumption" class="slide level2">
+<h2>The conditional mean independence assumption</h2>
+<div class="box">
+<p><span class="math display">\[\mathrm{E}(u_i|X_{i},W_{i}) = \mathrm{E}(u_i|W_{i})\]</span></p>
+</div>
+<ul>
+<li><p>In general, the control variable <span class="math inline">\(W_i\)</span> is correlated with <span class="math inline">\(u_i\)</span>; that is, <span class="math inline">\(\mathrm{E}(u_i|W_i) \neq 0\)</span></p></li>
+<li><p>Under conditional mean independence, <span class="math inline">\(X_i\)</span> is <strong>as-if randomly assigned</strong> for observations w/ same <span class="math inline">\(W_i\)</span>-value.</p>
+<p>Then, <span class="math inline">\(\hat{\beta}_1\)</span> is a consistent estimator of the causal effect on <span class="math inline">\(Y\)</span> of <span class="math inline">\(X\)</span>, namely of <span class="math inline">\(\beta_1\)</span></p></li>
+</ul>
+</section><section id="test-scores-and-student-teacher-ratios" class="slide level2">
+<h2>Test scores and student-teacher ratios</h2>
+<ul>
+<li><p>Failure to account for “outside learning opportunities” is a potential omitted variable bias in estimating the causal effect of student-teacher ratios on test scores</p></li>
+<li><p>Outside learning opportunities likely correlated with economic background; therefore, consider</p>
+<p><span class="math display">\[\begin{multline*}
+Score_i = \beta_0 + \beta_1 STR_i  \\
++ \beta_2 PctEL_i + \beta_3 LchPct_i + u_i
+\end{multline*}\]</span></p>
+<p>where <span class="math inline">\(LchPct_i\)</span> is share of economically disadvantaged children (receiving subsidized lunch) in district <span class="math inline">\(i\)</span></p></li>
+</ul>
+</section><section id="test-scores-and-student-teacher-ratios-1" class="slide level2">
+<h2>Test scores and student-teacher ratios</h2>
+<ul>
+<li><p>The control variable <span class="math inline">\(LchPct_i\)</span> is correlated with “outside learning opportunities”, and therefore <span class="math inline">\(u_i\)</span>:</p>
+<p><span class="math display">\[\mathrm{E}(u_i|STR_i,PctEL_i,LchPct_i) \neq 0\]</span></p></li>
+<li><p>Conditional mean independence</p>
+<p><span class="math display">\[\begin{multline*}
+\mathrm{E}(u_i|STR_i,PctEL_i,LchPct_i)  \\
+=  \mathrm{E}(u_i|PctEL_i,LchPct_i)
+\end{multline*}\]</span></p>
+<p>says that <span class="math inline">\(STR\)</span> is as-if randomly assigned among districts with the same <span class="math inline">\(PctEL_i\)</span>- and <span class="math inline">\(LchPct_i\)</span>-values</p></li>
+</ul>
+</section><section id="test-scores-and-student-teacher-ratios-2" class="slide level2">
+<h2>Test scores and student-teacher ratios</h2>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="co"># Compute robust standard errors and print output to console</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="kw">parameters</span>(lm1, <span class="dt">robust =</span> <span class="ot">TRUE</span>, <span class="dt">vcov_type =</span> <span class="st">&quot;HC1&quot;</span>)</span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="co"># Use lm() to estimate Score = b0 + b1*STR + b2*english + b3*lunch + u by OLS; </span></span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="co"># and assign output to lm3</span></span>
+<span id="cb14-5"><a href="#cb14-5"></a>lm3 &lt;-<span class="st"> </span><span class="kw">lm</span>(Score <span class="op">~</span><span class="st"> </span>STR <span class="op">+</span><span class="st"> </span>english <span class="op">+</span><span class="st"> </span>lunch, <span class="dt">data =</span> CASchools)</span>
+<span id="cb14-6"><a href="#cb14-6"></a><span class="co"># Compute robust standard errors and print output to console</span></span>
+<span id="cb14-7"><a href="#cb14-7"></a><span class="kw">parameters</span>(lm3, <span class="dt">robust =</span> <span class="ot">TRUE</span>, <span class="dt">vcov_type =</span> <span class="st">&quot;HC1&quot;</span>)</span></code></pre></div>
+</section><section id="test-scores-and-student-teacher-ratios-3" class="slide level2">
+<h2>Test scores and student-teacher ratios</h2>
+<pre><code>## Parameter   | Coefficient |   SE |           95% CI |      t |  df |      p
+## ---------------------------------------------------------------------------
+## (Intercept) |      686.03 | 8.73 | [668.88, 703.19] |  78.60 | 417 | &lt; .001
+## STR         |       -1.10 | 0.43 | [ -1.95,  -0.25] |  -2.54 | 417 | 0.011 
+## english     |       -0.65 | 0.03 | [ -0.71,  -0.59] | -20.94 | 417 | &lt; .001</code></pre>
+<pre><code>## Parameter   | Coefficient |   SE |           95% CI |      t |  df |      p
+## ---------------------------------------------------------------------------
+## (Intercept) |      700.15 | 5.57 | [689.20, 711.10] | 125.74 | 416 | &lt; .001
+## STR         |       -1.00 | 0.27 | [ -1.53,  -0.47] |  -3.70 | 416 | &lt; .001
+## english     |       -0.12 | 0.03 | [ -0.19,  -0.06] |  -3.70 | 416 | &lt; .001
+## lunch       |       -0.55 | 0.02 | [ -0.59,  -0.50] | -22.70 | 416 | &lt; .001</code></pre>
+</section></section>
+<section><section id="summary" class="title-slide slide level1"><h1>Summary</h1></section><section id="summary-1" class="slide level2">
+<h2>Summary</h2>
+<ul>
+<li><p>Omitted variable bias in a regression occurs when an omitted regressor (i) correlates with an included regressor, and (ii) is a determinant of the dependent variable</p></li>
+<li><p>Omitted variables violate the zero conditional mean assumption/conditional mean independence assumptions: pose a problem for OLS estimation of causal effects</p></li>
+<li><p>The multiple regression is one way to deal with the omitted variable problem, but requires that the omitted variable is observed, and can be included in the analysis</p></li>
+</ul>
+</section></section>
+    </div>
+  </div>
+
+  <script src="index_files/reveal.js-3.3.0.1/lib/js/head.min.js"></script>
+  <script src="index_files/reveal.js-3.3.0.1/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display the page number of the current slide
+        slideNumber: true,
+        // Push each slide change to the browser history
+        history: true,
+        // Vertical centering of slides
+        center: true,
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+
+        menu: {
+          numbers: true,
+          custom: false,
+          themes: false,
+          transitions: false
+        },
+
+
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'index_files/reveal.js-3.3.0.1/plugin/menu/menu.js', async: true },
+        ]
+      });
+    </script>
+  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script>
+    (function () {
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+      document.getElementsByTagName("head")[0].appendChild(script);
+    })();
+  </script>
+
+<script>
+  (function() {
+    if (window.jQuery) {
+      Reveal.addEventListener( 'slidechanged', function(event) {  
+        window.jQuery(event.previousSlide).trigger('hidden');
+        window.jQuery(event.currentSlide).trigger('shown');
+      });
+    }
+  })();
+</script>
+
+
+  </body>
+</html>
