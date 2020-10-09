@@ -223,6 +223,60 @@ plot(CASchools$english,lm1$residuals,
 parameters(lm1, robust = TRUE, vcov_type = "HC1")
 ```
 
+
+# Estimating causal effects with multiple regression
+
+## Causality
+
+- **Causality** means that a specific action or attribute leads to a specific, measureable consequence
+
+- Questions about causal relationships can be framed as **ceteris paribus** ("other things equal") questions:
+
+  <div class="box">
+  How does $Y$ change if $X$ is changed, holding all other factors that may affect $Y$ constant?
+  </div>
+  
+- Suggests an experimental approach to estimating causal effects, but experimental data rarely available
+
+## Estimating causal effects by OLS
+
+<div class="box">
+$$Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + u_i; \quad i=1,\ldots,n$$
+
+where $\beta_1$ and $\beta_2$ are a causal effects. The OLS estimators $\hat{\beta}_1$ and $\hat{\beta}_2$ are consistent estimator of $\beta_1$ and $\beta_2$ if
+
+1. Zero conditional mean: $\mathrm{E}(u_i|X_{1i},X_{2i}) = 0$
+
+2. $(X_{1i},X_{2i},Y_i;i=1,\ldots,n)$ is an i.i.d. sample
+
+3. $X_{1i}$ and $X_{2i}$ and $Y_i$ have nonzero finite 4th moments
+
+4. There is no perfect multicollinearity
+
+</div>
+
+
+## The zero conditional mean assumption
+
+<div class="box">
+$$\mathrm{E}(u_i|X_{1i},X_{2i}) = 0$$
+</div>
+
+- Different $X_{\ell i}$-values not associated w/ systematic changes in mean $u_i$: $X_{\ell i}$ is **as-if randomly assigned**, for $\ell=1,2$
+
+- Zero conditional mean implies zero covariance:
+
+  $$\mathrm{E}(u_i|X_{1i},X_{2i}) = 0 \Rightarrow \mathrm{Cov}(u_i,X_{\ell i})  = 0, \quad \ell=1,2$$
+
+
+## The zero conditional mean assumption and OLS
+
+- Consistent estimation **requires** $\mathrm{E}(u_i|X_{1i},X_{2i}) = 0$, implying zero covariance between error and regressors in the population from which the sample is drawn.
+
+- The OLS estimator **imposes** $\sum_{i=1}^n \hat{u}_i X_{\ell i} = 0$ for $\ell = 1,2$, which implies zero covariance between residuals and regressors in the sample
+
+- The residuals are the sample counterpart to the population errors. If errors and regressors are correlated in the population, we should use an estimator that allows for residuals and regressors to be correlated in the sample 
+
 # Omitted variable bias
 
 ## An omitted variable
@@ -312,59 +366,7 @@ parameters(lm2, robust = TRUE, vcov_type = "HC1")
 
 - **Multiple regression analysis** is a convenient way to addresses omitted variable bias when the omitted variable is **observed**, and can be included in the analysis
 
-
-# Estimating causal effects with multiple regression
-
-## Causality
-
-- **Causality** means that a specific action or attribute leads to a specific, measureable consequence
-
-- Questions about causal relationships can be framed as **ceteris paribus** ("other things equal") questions:
-
-  <div class="box">
-  How does $Y$ change if $X$ is changed, holding all other factors that may affect $Y$ constant?
-  </div>
-  
-- Suggests an experimental approach to estimating causal effects, but experimental data rarely available
-
-## Estimating causal effects by OLS
-
-<div class="box">
-$$Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + u_i; \quad i=1,\ldots,n$$
-
-where $\beta_1$ and $\beta_2$ are a causal effects. The OLS estimators $\hat{\beta}_1$ and $\hat{\beta}_2$ are consistent estimator of $\beta_1$ and $\beta_2$ if
-
-1. Zero conditional mean: $\mathrm{E}(u_i|X_{1i},X_{2i}) = 0$
-
-2. $(X_{1i},X_{2i},Y_i;i=1,\ldots,n)$ is an i.i.d. sample
-
-3. $X_{1i}$ and $X_{2i}$ and $Y_i$ have nonzero finite 4th moments
-
-4. There is no perfect multicollinearity
-
-</div>
-
-
-## The zero conditional mean assumption
-
-<div class="box">
-$$\mathrm{E}(u_i|X_{1i},X_{2i}) = 0$$
-</div>
-
-- Different $X_{\ell i}$-values not associated w/ systematic changes in mean $u_i$: $X_{\ell i}$ is **as-if randomly assigned**, for $\ell=1,2$
-
-- Zero conditional mean implies zero covariance:
-
-  $$\mathrm{E}(u_i|X_{1i},X_{2i}) = 0 \Rightarrow \mathrm{Cov}(u_i,X_{\ell i})  = 0, \quad \ell=1,2$$
-
-
-## The zero conditional mean assumption and OLS
-
-- Consistent estimation **requires** $\mathrm{E}(u_i|X_{1i},X_{2i}) = 0$, implying zero covariance between error and regressors in the population from which the sample is drawn.
-
-- The OLS estimator **imposes** $\sum_{i=1}^n \hat{u}_i X_{\ell i} = 0$ for $\ell = 1,2$, which implies zero covariance between residuals and regressors in the sample
-
-- The residuals are the sample counterpart to the population errors. If errors and regressors are correlated in the population, we should use an estimator that allows for residuals and regressors to be correlated in the sample 
+# Control variables
 
 ## Control variables
 

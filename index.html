@@ -660,6 +660,46 @@ EC3133 | Royal Holloway | 2020/21
 ## STR         |       -1.10 | 0.43 | [ -1.95,  -0.25] |  -2.54 | 417 | 0.011 
 ## english     |       -0.65 | 0.03 | [ -0.71,  -0.59] | -20.94 | 417 | &lt; .001</code></pre>
 </section></section>
+<section><section id="estimating-causal-effects-with-multiple-regression" class="title-slide slide level1"><h1>Estimating causal effects with multiple regression</h1></section><section id="causality" class="slide level2">
+<h2>Causality</h2>
+<ul>
+<li><p><strong>Causality</strong> means that a specific action or attribute leads to a specific, measureable consequence</p></li>
+<li><p>Questions about causal relationships can be framed as <strong>ceteris paribus</strong> (“other things equal”) questions:</p>
+<div class="box">
+<p>How does <span class="math inline">\(Y\)</span> change if <span class="math inline">\(X\)</span> is changed, holding all other factors that may affect <span class="math inline">\(Y\)</span> constant?</p>
+</div></li>
+<li><p>Suggests an experimental approach to estimating causal effects, but experimental data rarely available</p></li>
+</ul>
+</section><section id="estimating-causal-effects-by-ols" class="slide level2">
+<h2>Estimating causal effects by OLS</h2>
+<div class="box">
+<p><span class="math display">\[Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + u_i; \quad i=1,\ldots,n\]</span></p>
+<p>where <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> are a causal effects. The OLS estimators <span class="math inline">\(\hat{\beta}_1\)</span> and <span class="math inline">\(\hat{\beta}_2\)</span> are consistent estimator of <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> if</p>
+<ol type="1">
+<li><p>Zero conditional mean: <span class="math inline">\(\mathrm{E}(u_i|X_{1i},X_{2i}) = 0\)</span></p></li>
+<li><p><span class="math inline">\((X_{1i},X_{2i},Y_i;i=1,\ldots,n)\)</span> is an i.i.d. sample</p></li>
+<li><p><span class="math inline">\(X_{1i}\)</span> and <span class="math inline">\(X_{2i}\)</span> and <span class="math inline">\(Y_i\)</span> have nonzero finite 4th moments</p></li>
+<li><p>There is no perfect multicollinearity</p></li>
+</ol>
+</div>
+</section><section id="the-zero-conditional-mean-assumption" class="slide level2">
+<h2>The zero conditional mean assumption</h2>
+<div class="box">
+<p><span class="math display">\[\mathrm{E}(u_i|X_{1i},X_{2i}) = 0\]</span></p>
+</div>
+<ul>
+<li><p>Different <span class="math inline">\(X_{\ell i}\)</span>-values not associated w/ systematic changes in mean <span class="math inline">\(u_i\)</span>: <span class="math inline">\(X_{\ell i}\)</span> is <strong>as-if randomly assigned</strong>, for <span class="math inline">\(\ell=1,2\)</span></p></li>
+<li><p>Zero conditional mean implies zero covariance:</p>
+<p><span class="math display">\[\mathrm{E}(u_i|X_{1i},X_{2i}) = 0 \Rightarrow \mathrm{Cov}(u_i,X_{\ell i})  = 0, \quad \ell=1,2\]</span></p></li>
+</ul>
+</section><section id="the-zero-conditional-mean-assumption-and-ols" class="slide level2">
+<h2>The zero conditional mean assumption and OLS</h2>
+<ul>
+<li><p>Consistent estimation <strong>requires</strong> <span class="math inline">\(\mathrm{E}(u_i|X_{1i},X_{2i}) = 0\)</span>, implying zero covariance between error and regressors in the population from which the sample is drawn.</p></li>
+<li><p>The OLS estimator <strong>imposes</strong> <span class="math inline">\(\sum_{i=1}^n \hat{u}_i X_{\ell i} = 0\)</span> for <span class="math inline">\(\ell = 1,2\)</span>, which implies zero covariance between residuals and regressors in the sample</p></li>
+<li><p>The residuals are the sample counterpart to the population errors. If errors and regressors are correlated in the population, we should use an estimator that allows for residuals and regressors to be correlated in the sample</p></li>
+</ul>
+</section></section>
 <section><section id="omitted-variable-bias" class="title-slide slide level1"><h1>Omitted variable bias</h1></section><section id="an-omitted-variable" class="slide level2">
 <h2>An omitted variable</h2>
 <p><img data-src="index_files/figure-revealjs/unnamed-chunk-11-1.png" /><!-- --></p>
@@ -703,46 +743,7 @@ EC3133 | Royal Holloway | 2020/21
 <li><p><strong>Multiple regression analysis</strong> is a convenient way to addresses omitted variable bias when the omitted variable is <strong>observed</strong>, and can be included in the analysis</p></li>
 </ul>
 </section></section>
-<section><section id="estimating-causal-effects-with-multiple-regression" class="title-slide slide level1"><h1>Estimating causal effects with multiple regression</h1></section><section id="causality" class="slide level2">
-<h2>Causality</h2>
-<ul>
-<li><p><strong>Causality</strong> means that a specific action or attribute leads to a specific, measureable consequence</p></li>
-<li><p>Questions about causal relationships can be framed as <strong>ceteris paribus</strong> (“other things equal”) questions:</p>
-<div class="box">
-<p>How does <span class="math inline">\(Y\)</span> change if <span class="math inline">\(X\)</span> is changed, holding all other factors that may affect <span class="math inline">\(Y\)</span> constant?</p>
-</div></li>
-<li><p>Suggests an experimental approach to estimating causal effects, but experimental data rarely available</p></li>
-</ul>
-</section><section id="estimating-causal-effects-by-ols" class="slide level2">
-<h2>Estimating causal effects by OLS</h2>
-<div class="box">
-<p><span class="math display">\[Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + u_i; \quad i=1,\ldots,n\]</span></p>
-<p>where <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> are a causal effects. The OLS estimators <span class="math inline">\(\hat{\beta}_1\)</span> and <span class="math inline">\(\hat{\beta}_2\)</span> are consistent estimator of <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> if</p>
-<ol type="1">
-<li><p>Zero conditional mean: <span class="math inline">\(\mathrm{E}(u_i|X_{1i},X_{2i}) = 0\)</span></p></li>
-<li><p><span class="math inline">\((X_{1i},X_{2i},Y_i;i=1,\ldots,n)\)</span> is an i.i.d. sample</p></li>
-<li><p><span class="math inline">\(X_{1i}\)</span> and <span class="math inline">\(X_{2i}\)</span> and <span class="math inline">\(Y_i\)</span> have nonzero finite 4th moments</p></li>
-<li><p>There is no perfect multicollinearity</p></li>
-</ol>
-</div>
-</section><section id="the-zero-conditional-mean-assumption" class="slide level2">
-<h2>The zero conditional mean assumption</h2>
-<div class="box">
-<p><span class="math display">\[\mathrm{E}(u_i|X_{1i},X_{2i}) = 0\]</span></p>
-</div>
-<ul>
-<li><p>Different <span class="math inline">\(X_{\ell i}\)</span>-values not associated w/ systematic changes in mean <span class="math inline">\(u_i\)</span>: <span class="math inline">\(X_{\ell i}\)</span> is <strong>as-if randomly assigned</strong>, for <span class="math inline">\(\ell=1,2\)</span></p></li>
-<li><p>Zero conditional mean implies zero covariance:</p>
-<p><span class="math display">\[\mathrm{E}(u_i|X_{1i},X_{2i}) = 0 \Rightarrow \mathrm{Cov}(u_i,X_{\ell i})  = 0, \quad \ell=1,2\]</span></p></li>
-</ul>
-</section><section id="the-zero-conditional-mean-assumption-and-ols" class="slide level2">
-<h2>The zero conditional mean assumption and OLS</h2>
-<ul>
-<li><p>Consistent estimation <strong>requires</strong> <span class="math inline">\(\mathrm{E}(u_i|X_{1i},X_{2i}) = 0\)</span>, implying zero covariance between error and regressors in the population from which the sample is drawn.</p></li>
-<li><p>The OLS estimator <strong>imposes</strong> <span class="math inline">\(\sum_{i=1}^n \hat{u}_i X_{\ell i} = 0\)</span> for <span class="math inline">\(\ell = 1,2\)</span>, which implies zero covariance between residuals and regressors in the sample</p></li>
-<li><p>The residuals are the sample counterpart to the population errors. If errors and regressors are correlated in the population, we should use an estimator that allows for residuals and regressors to be correlated in the sample</p></li>
-</ul>
-</section><section id="control-variables" class="slide level2">
+<section><section id="control-variables" class="title-slide slide level1"><h1>Control variables</h1></section><section id="control-variables-1" class="slide level2">
 <h2>Control variables</h2>
 <ul>
 <li><p>Interested in the causal effect of a subset of regressors: distinguish b/w variables of interest and <strong>control variables</strong></p></li>
